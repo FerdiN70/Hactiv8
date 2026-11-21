@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daily Planner — To-Do &amp; Habit Tracker</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ===== APP SHELL ===== -->
+  <div class="app-shell">
+
+    <!-- ── Header ── -->
+    <header class="app-header">
+      <h1 class="app-title">Daily Planner</h1>
+      <p class="app-subtitle" id="js-date"></p>
+    </header>
+
+    <!-- ══════════════════════════════════════
+         NAV BAR — page switcher
+    ══════════════════════════════════════ -->
+    <nav class="page-nav" role="tablist" aria-label="Application pages">
+      <button class="page-nav__btn page-nav__btn--active" role="tab" aria-selected="true"  data-page="dashboard">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M2 10a8 8 0 1116 0A8 8 0 012 10zm8-4a1 1 0 100 2 1 1 0 000-2zm0 4a1 1 0 011 1v3a1 1 0 11-2 0v-3a1 1 0 011-1z"/></svg>
+        Dashboard
+      </button>
+      <button class="page-nav__btn" role="tab" aria-selected="false" data-page="todo">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg>
+        To-Do
+      </button>
+      <button class="page-nav__btn" role="tab" aria-selected="false" data-page="habits">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
+        Habits
+      </button>
+      <button class="page-nav__btn" role="tab" aria-selected="false" data-page="whatsapp">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M2 2l16 8-16 8V12l11-2-11-2V2z"/></svg>
+        WhatsApp
+      </button>
+    </nav>
+
+    <!-- ══════════════════════════════════════
+         PAGE: DASHBOARD
+    ══════════════════════════════════════ -->
+    <div class="page" id="page-dashboard">
+
+      <!-- Row A: 4 quick-stat cards -->
+      <section class="dash-stats" aria-label="Quick stats">
+        <div class="stat-card stat-card--blue">
+          <span class="stat-value" id="js-dash-tasks-done">0</span>
+          <span class="stat-label">Tasks Done Today</span>
+        </div>
+        <div class="stat-card stat-card--indigo">
+          <span class="stat-value" id="js-dash-tasks-active">0</span>
+          <span class="stat-label">Active Tasks</span>
+        </div>
+        <div class="stat-card stat-card--amber">
+          <span class="stat-value" id="js-dash-overdue">0</span>
+          <span class="stat-label">Overdue</span>
+        </div>
+        <div class="stat-card stat-card--green">
+          <span class="stat-value" id="js-dash-streaks">0</span>
+          <span class="stat-label">Active Streaks</span>
+        </div>
+      </section>
+
+      <!-- Row B: Upcoming alarms + Overdue tasks -->
+      <div class="dash-row">
+
+        <!-- Upcoming / Due Soon -->
+        <section class="card dash-panel" aria-labelledby="js-upcoming-heading">
+          <h2 class="section-heading" id="js-upcoming-heading">
+            <svg class="icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
+            Upcoming Reminders
+          </h2>
+          <ul class="dash-list" id="js-dash-upcoming" aria-live="polite"></ul>
+          <p class="empty-state" id="js-dash-upcoming-empty" hidden>No upcoming reminders.</p>
+        </section>
+
+        <!-- Overdue tasks -->
+        <section class="card dash-panel" aria-labelledby="js-overdue-heading">
+          <h2 class="section-heading" id="js-overdue-heading">
+            <svg class="icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+            Overdue Tasks
+          </h2>
+          <ul class="dash-list" id="js-dash-overdue-list" aria-live="polite"></ul>
+          <p class="empty-state" id="js-dash-overdue-empty" hidden>No overdue tasks. 🎉</p>
+        </section>
+
+      </div><!-- /.dash-row -->
+
+      <!-- Row C: Habit progress summary -->
+      <section class="card" aria-labelledby="js-habit-summary-heading">
+        <h2 class="section-heading" id="js-habit-summary-heading">
+          <svg class="icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/></svg>
+          Habit Progress
+        </h2>
+        <div id="js-dash-habits" class="dash-habit-grid" aria-live="polite"></div>
+        <p class="empty-state" id="js-dash-habits-empty" hidden>No habits tracked yet.</p>
+      </section>
+
+      <!-- Row D: 7-day task completion overview (bar chart via SVG) -->
+      <section class="card" aria-labelledby="js-week-heading">
+        <h2 class="section-heading" id="js-week-heading">
+          <svg class="icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/></svg>
+          7-Day Task Overview
+        </h2>
+        <div class="week-chart" id="js-week-chart" aria-label="7-day task completion bar chart"></div>
+      </section>
+
+      <!-- Row E: Recent completions -->
+      <section class="card" aria-labelledby="js-recent-heading">
+        <h2 class="section-heading" id="js-recent-heading">
+          <svg class="icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+          Recently Completed
+        </h2>
+        <ul class="dash-list" id="js-dash-recent" aria-live="polite"></ul>
+        <p class="empty-state" id="js-dash-recent-empty" hidden>Nothing completed yet.</p>
+      </section>
+
+    </div><!-- /#page-dashboard -->
+
+    <!-- ══════════════════════════════════════
+         PAGE: TO-DO LIST
+    ══════════════════════════════════════ -->
+    <div class="page page--hidden" id="page-todo">
+
+      <!-- Summary strip (mini metrics for this page) -->
+      <section class="metrics-row" aria-label="Summary metrics">
+        <div class="metric-card">
+          <span class="metric-value" id="js-metric-done">0</span>
+          <span class="metric-label">Tasks Done Today</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-value" id="js-metric-active-tasks">0</span>
+          <span class="metric-label">Active Tasks</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-value" id="js-metric-streaks">0</span>
+          <span class="metric-label">Habit Streaks Active</span>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="todo-heading">
+        <h2 class="section-heading" id="todo-heading">To-Do List</h2>
+
+        <!-- Task input form -->
+        <form class="task-form" id="js-task-form" aria-label="Add new task">
+          <!-- Row 1: text + priority + category -->
+          <div class="task-form__row task-form__row--main">
+            <input
+              type="text"
+              id="js-task-input"
+              class="text-input"
+              placeholder="What needs to be done?"
+              maxlength="120"
+              aria-label="Task description"
+              required
+            />
+            <select id="js-task-priority" class="select-input" aria-label="Priority">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+            <input
+              type="text"
+              id="js-task-category"
+              class="text-input text-input--sm"
+              placeholder="Category"
+              maxlength="30"
+              aria-label="Category tag"
+            />
+          </div>
+          <!-- Row 2: alarm (date + time) + add button -->
+          <div class="task-form__row task-form__row--alarm">
+            <label class="alarm-label" for="js-task-alarm-date">
+              <svg class="icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm1 9H9V6h2v5zm0 2H9v-2h2v2z"/></svg>
+              Reminder
+            </label>
+            <input
+              type="date"
+              id="js-task-alarm-date"
+              class="text-input text-input--date"
+              aria-label="Reminder date"
+            />
+            <input
+              type="time"
+              id="js-task-alarm-time"
+              class="text-input text-input--time"
+              aria-label="Reminder time"
+            />
+            <button type="submit" class="btn btn--primary">Add Task</button>
+          </div>
+        </form>
+
+        <!-- Filter tabs -->
+        <div class="filter-tabs" role="tablist" aria-label="Task filter">
+          <button class="filter-tab filter-tab--active" role="tab" aria-selected="true"  data-filter="all"       >All</button>
+          <button class="filter-tab"                    role="tab" aria-selected="false" data-filter="active"    >Active</button>
+          <button class="filter-tab"                    role="tab" aria-selected="false" data-filter="completed" >Completed</button>
+          <button class="filter-tab"                    role="tab" aria-selected="false" data-filter="overdue"   >Overdue</button>
+        </div>
+
+        <!-- Task list -->
+        <ul class="task-list" id="js-task-list" aria-live="polite" aria-label="Task list"></ul>
+        <p class="empty-state" id="js-tasks-empty" hidden>No tasks here yet.</p>
+      </section>
+
+    </div><!-- /#page-todo -->
+
+    <!-- ══════════════════════════════════════
+         PAGE: HABIT TRACKER
+    ══════════════════════════════════════ -->
+    <div class="page page--hidden" id="page-habits">
+      <section class="card" aria-labelledby="habit-heading">
+        <h2 class="section-heading" id="habit-heading">Habit Tracker</h2>
+
+        <!-- Add habit form -->
+        <form class="habit-form" id="js-habit-form" aria-label="Add new habit">
+          <!-- Row 1: habit name -->
+          <div class="habit-form__row">
+            <input
+              type="text"
+              id="js-habit-input"
+              class="text-input"
+              placeholder="New habit (e.g. Morning run)"
+              maxlength="80"
+              aria-label="Habit name"
+              required
+            />
+          </div>
+          <!-- Row 2: target duration + unit + add button -->
+          <div class="habit-form__row habit-form__row--target">
+            <label class="target-label" for="js-habit-target-value">
+              <svg class="icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
+              Target
+            </label>
+            <input
+              type="number"
+              id="js-habit-target-value"
+              class="text-input text-input--target"
+              placeholder="30"
+              min="1"
+              max="999"
+              aria-label="Target duration value"
+            />
+            <select id="js-habit-target-unit" class="select-input select-input--unit" aria-label="Target unit">
+              <option value="min">min</option>
+              <option value="hr">hr</option>
+            </select>
+            <button type="submit" class="btn btn--primary">Add Habit</button>
+          </div>
+        </form>
+
+        <!-- Habit list — timers injected per item by JS -->
+        <ul class="habit-list" id="js-habit-list" aria-live="polite" aria-label="Habit list"></ul>
+        <p class="empty-state" id="js-habits-empty" hidden>No habits added yet.</p>
+      </section>
+    </div><!-- /#page-habits -->
+
+    <!-- ══════════════════════════════════════
+         PAGE: WHATSAPP SETTINGS
+    ══════════════════════════════════════ -->
+    <div class="page page--hidden" id="page-whatsapp">
+      <section class="card" aria-labelledby="wa-heading">
+        <h2 class="section-heading" id="wa-heading">WhatsApp Reminder</h2>
+        <p class="section-desc">Save your WhatsApp number to receive task reminders when an alarm fires, or send a quick reminder manually.</p>
+
+        <form class="wa-form" id="js-wa-form" aria-label="WhatsApp settings">
+          <div class="wa-form__row">
+            <!-- Country code -->
+            <input
+              type="text"
+              id="js-wa-code"
+              class="text-input text-input--code"
+              placeholder="+62"
+              maxlength="5"
+              aria-label="Country code (e.g. +62)"
+              pattern="\+?[0-9]{1,4}"
+            />
+            <!-- Phone number -->
+            <input
+              type="tel"
+              id="js-wa-number"
+              class="text-input"
+              placeholder="8123456789 (without leading 0)"
+              maxlength="15"
+              aria-label="Phone number"
+            />
+            <button type="submit" class="btn btn--primary">Save Number</button>
+          </div>
+          <p class="wa-saved-label" id="js-wa-saved" hidden></p>
+        </form>
+
+        <!-- Quick send -->
+        <div class="wa-quick" id="js-wa-quick" hidden>
+          <input
+            type="text"
+            id="js-wa-msg"
+            class="text-input"
+            placeholder="Quick reminder message…"
+            maxlength="300"
+            aria-label="Quick WhatsApp message"
+          />
+          <button type="button" class="btn btn--wa" id="js-wa-send">
+            <svg class="icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M2 2l16 8-16 8V12l11-2-11-2V2z"/></svg>
+            Send via WhatsApp
+          </button>
+        </div>
+      </section>
+    </div><!-- /#page-whatsapp -->
+
+  </div><!-- /.app-shell -->
+
+  <!-- ── Task Edit Modal ── -->
+  <div class="modal-overlay" id="js-edit-modal" role="dialog" aria-modal="true" aria-labelledby="js-edit-modal-title" hidden>
+    <div class="modal">
+      <div class="modal__header">
+        <h2 class="modal__title" id="js-edit-modal-title">Edit Task</h2>
+        <button class="modal__close" id="js-edit-modal-close" aria-label="Close edit dialog">&#x2715;</button>
+      </div>
+
+      <form class="modal__body" id="js-edit-form" novalidate>
+        <!-- Task title -->
+        <div class="modal__field">
+          <label class="modal__label" for="js-edit-text">Task</label>
+          <input type="text" id="js-edit-text" class="text-input" maxlength="120" required aria-label="Task description" />
+        </div>
+
+        <!-- Priority -->
+        <div class="modal__field">
+          <label class="modal__label" for="js-edit-priority">Priority</label>
+          <select id="js-edit-priority" class="select-input" aria-label="Priority">
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select>
+        </div>
+
+        <!-- Category -->
+        <div class="modal__field">
+          <label class="modal__label" for="js-edit-category">Category</label>
+          <input type="text" id="js-edit-category" class="text-input" maxlength="30" placeholder="e.g. Work" aria-label="Category tag" />
+        </div>
+
+        <!-- Reminder date + time -->
+        <div class="modal__field modal__field--row">
+          <div class="modal__field-group">
+            <label class="modal__label" for="js-edit-alarm-date">Reminder Date</label>
+            <input type="date" id="js-edit-alarm-date" class="text-input" aria-label="Reminder date" />
+          </div>
+          <div class="modal__field-group">
+            <label class="modal__label" for="js-edit-alarm-time">Time</label>
+            <input type="time" id="js-edit-alarm-time" class="text-input" aria-label="Reminder time" />
+          </div>
+        </div>
+
+        <div class="modal__actions">
+          <button type="button" class="btn btn--ghost" id="js-edit-cancel">Cancel</button>
+          <button type="submit" class="btn btn--primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Alarm notification toast -->
+  <div class="toast" id="js-toast" role="alert" aria-live="assertive" hidden>
+    <span class="toast__msg" id="js-toast-msg"></span>
+    <button class="toast__close" id="js-toast-close" aria-label="Dismiss notification">&#x2715;</button>
+  </div>
+
+  <!-- Watermark footer -->
+  <footer class="watermark" aria-hidden="true">Ferdian-Hactiv8</footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
